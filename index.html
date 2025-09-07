@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Table Generator — Multiplication Table</title>
+  <style>
+    :root{
+      --bg-light: #f5f7fa;
+      --bg-dark: #0f1724;
+      --card-light: #ffffffcc;
+      --card-dark: #0b1220;
+      --accent: #6366f1;
+      --accent-light: #a5b4fc;
+      --muted-light: #475569;
+      --muted-dark: #94a3b8;
+      --font-main: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    
+    body{
+      /* background: url("/chifuyu.jpg") no-repeat center center/cover;   */
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(180deg,var(--bg-dark) 0%, #071827 60%);
+      color: #e6eef8;
+      font-family: var(--font-main);
+      transition: background 0.4s ease, color 0.4s ease;
+      padding:20px;
+    }
+
+    body.light{
+      background:linear-gradient(180deg, var(--bg-light) 0%, #e2e8f0 100%);
+      /* background: url("/chifuyu.jpg") no-repeat center center/cover;   */
+      color:#1e293b;
+    }
+
+    .app{
+      width:100%;
+      max-width:980px;
+      background:var(--card-dark);
+      background: transparent;
+      backdrop-filter: blur(10px);
+      border: 1px solid #475569;
+      border-radius:16px;
+      box-shadow: 0 8px 30px rgba(2,6,23,0.7);
+      padding:20px;
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap:20px;
+      align-items:start;
+      transition: background 0.4s ease;
+    }
+    body.light .app{background:var(--card-light);box-shadow:0 8px 20px rgba(0,0,0,0.1)}
+
+    .panel{
+      border-radius:12px;
+      padding:16px;
+      border:1px solid rgba(255,255,255,0.06);
+      backdrop-filter: blur(8px) saturate(140%);
+    }
+    body.light .panel{border:1px solid rgba(0,0,0,0.05)}
+
+    h1{font-size:18px;margin:0 0 8px;font-weight:600}
+    p.lead{margin:0 0 16px;font-size:13px;color:var(--muted-dark)}
+    body.light p.lead{color:var(--muted-light)}
+
+    label{display:block;font-size:13px;margin-bottom:6px;color:var(--muted-dark)}
+    body.light label{color:var(--muted-light)}
+    .row{display:flex;gap:26px;margin-bottom:12px}
+    input[type="number"], select{
+      width:95%;padding:10px;border-radius:8px;
+      border:1px solid rgba(255,255,255,0.1);
+      background:rgba(255,255,255,0.06);
+      color:inherit;font-size:14px;
+      transition: background 0.3s, border 0.3s;
+    }
+    body.light input, body.light select{
+      background:rgba(0,0,0,0.04);
+      border:1px solid rgba(0,0,0,0.08);
+    }
+    #layout, #cellType{
+        background-color: var(--accent-light);
+        color: #071827;
+    }
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+    button{
+      cursor:pointer;padding:10px 12px;border-radius:10px;
+      border:none;background:linear-gradient(90deg,var(--accent),var(--accent-light));
+      color:#fff;font-weight:600;transition:transform 0.2s;
+    }
+    button:hover{transform:translateY(-2px)}
+    button.ghost{background:transparent;border:1px solid currentColor;color:var(--accent);}
+
+    .theme-toggle{margin-left:auto;font-size:13px;cursor:pointer;background:transparent;border:none;color:inherit;}
+
+    .output{
+      padding:12px;
+      overflow:auto;
+      max-height:70vh;
+    }
+
+    table.generated{
+      border-collapse:collapse;width:100%;min-width:320px;margin-top:8px;font-family:var(--font-mono)
+    }
+    table.generated th, table.generated td{
+      padding:10px;border:1px solid rgba(255,255,255,0.08);text-align:center;transition:background 0.2s
+    }
+    table.generated th{background:rgba(255,255,255,0.08);font-weight:700}
+    table.generated tr:hover td{background:rgba(99,102,241,0.15)}
+    body.light table.generated th{background:rgba(0,0,0,0.06)}
+    body.light table.generated tr:hover td{background:rgba(99,102,241,0.12)}
+
+    .meta{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
+    .small{font-size:13px;color:var(--muted-dark)}
+    body.light .small{color:var(--muted-light)}
+
+    @media (max-width:860px){
+      .app{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+  <div class="app" role="application">
+    <div class="panel" aria-label="controls">
+      <h1>Table Generator</h1>
+      <p class="lead">Generate a multiplication table for any number. Choose the range and style, then export or copy the result.</p>
+
+      <label for="number">Number</label>
+      <input id="number" type="number" step="1" min="-99999" />
+
+      <div class="row">
+        <div style="flex:1">
+          <label for="from">From</label>
+          <input id="from" type="number" value="1" />
+        </div>
+        <div style="width:120px; margin-right: 10px;">
+          <label for="to">To</label>
+          <input id="to" type="number" value="10" />
+        </div>
+      </div>
+
+      <label for="layout">Layout</label>
+      <select id="layout">
+        <option value="single">Single-column (classic)</option>
+        <option value="grid">Grid (rows × cols)</option>
+      </select>
+
+      <div id="gridOptions" style="display:none;margin-top:10px">
+        <div class="row">
+          <div style="flex:1">
+            <label for="cols">Columns</label>
+            <input id="cols" type="number" value="2" min="1" />
+          </div>
+          <div style="width:120px">
+            <label for="cellType">Cell</label>
+            <select id="cellType">
+              <option value="expr">Expression (7 × 1 = 7)</option>
+              <option value="value">Value only (7)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls" style="margin-top:12px">
+        <button id="generate">Generate</button>
+        <button id="copy" class="ghost">📋 Copy HTML</button>
+        <button id="download" class="ghost">⬇️ Download CSV</button>
+        <button id="quiz" class="ghost">🎯 Quiz Mode</button>
+        <button class="theme-toggle" id="themeToggle">🌙 Toggle Theme</button>
+      </div>
+
+      <div class="meta">
+        <div class="small">Preview updates live as you type. CSV export uses the current range.</div>
+      </div>
+    </div>
+
+    <div class="panel" aria-live="polite">
+      <h1>Preview</h1>
+      <div class="output" id="preview"></div>
+    </div>
+  </div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const numberInput = $('number');
+    const fromInput = $('from');
+    const toInput = $('to');
+    const layout = $('layout');
+    const gridOptions = $('gridOptions');
+    const colsInput = $('cols');
+    const cellType = $('cellType');
+    const preview = $('preview');
+
+    layout.addEventListener('change', ()=>{
+      gridOptions.style.display = layout.value === 'grid' ? 'block' : 'none';
+      render();
+    });
+
+    function generateTableHTML(quizMode=false){
+      const n = Number(numberInput.value) || 0;
+      let from = Number(fromInput.value);
+      let to = Number(toInput.value);
+      if(from > to){ [from,to] = [to,from] }
+
+      const mode = layout.value;
+      if(mode === 'single'){
+        let html = '<table class="generated"><thead><tr><th>Expression</th><th>Result</th></tr></thead><tbody>';
+        for(let i=from;i<=to;i++){
+          let result = quizMode ? "?" : n*i;
+          html += `<tr><td>${n} × ${i}</td><td>${result}</td></tr>`;
+        }
+        html += '</tbody></table>';
+        return html;
+      } else {
+        const cols = Math.max(1, Number(colsInput.value) || 1);
+        const cell = cellType.value;
+        const entries = [];
+        for(let i=from;i<=to;i++) entries.push({i,expr:`${n} × ${i}`,val: n*i});
+
+        let html = '<table class="generated"><tbody>';
+        for(let r=0;r<Math.ceil(entries.length/cols);r++){
+          html += '<tr>';
+          for(let c=0;c<cols;c++){
+            const idx = r*cols+c;
+            if(idx < entries.length){
+              const e = entries[idx];
+              let result = quizMode ? "?" : e.val;
+              html += `<td>${cell==='expr' ? `${e.expr} = ${result}` : `${result}`}</td>`;
+            } else html += '<td></td>';
+          }
+          html += '</tr>';
+        }
+        html += '</tbody></table>';
+        return html;
+      }
+    }
+
+    function generateCSV(){
+      const n = Number(numberInput.value) || 0;
+      let from = Number(fromInput.value);
+      let to = Number(toInput.value);
+      if(from > to){ [from,to] = [to,from] }
+      let csv = 'number,multiplier,result\n';
+      for(let i=from;i<=to;i++) csv += `${n},${i},${n*i}\n`;
+      return csv;
+    }
+
+    function render(quizMode=false){
+      preview.innerHTML = generateTableHTML(quizMode);
+    }
+
+    $('generate').addEventListener('click', ()=> render());
+    $('quiz').addEventListener('click', ()=> render(true));
+
+    $('copy').addEventListener('click', async ()=>{
+      const html = generateTableHTML();
+      await navigator.clipboard.writeText(html);
+      $('copy').textContent = '✅ Copied!';
+      setTimeout(()=> $('copy').textContent = '📋 Copy HTML', 1300);
+    });
+
+    $('download').addEventListener('click', ()=>{
+      const csv = generateCSV();
+      const blob = new Blob([csv], {type:'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'table.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    // theme toggle
+    $('themeToggle').addEventListener('click', ()=>{
+      document.body.classList.toggle('light');
+    });
+
+    [numberInput, fromInput, toInput, colsInput, cellType].forEach(i=>{
+      i.addEventListener('input', ()=> render());
+    });
+
+    render();
+  </script>
+</body>
+</html>
